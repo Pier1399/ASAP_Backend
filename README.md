@@ -1,6 +1,6 @@
 # SentimentAnalysis_Backend
 This Repository contains the implmentation of the backend server used to access to the final product of the Sentimental Analysis project of group "I Sentimentalysti" realized for the course of Software Engineering @ Politecnico di Bari. We started with a 50k reviews dataset from IMDB (found on Kaggle) and created a model which can be used for a binary classification o user reviews in two categories (positive or negative).<br>
-The implementation of the backend server made by <b>Uvicorn and FastAPI</b>, and it can be used to access to the ML model implementation via HTML request on local port 5555. The server implements a "/healt_check" access point (GET method only) and a "/prediction" feature (POST method only) which receives in input the sentence and returns the prediction result and the confidence score.
+The implementation of the backend server made with <b>Uvicorn and FastAPI</b> can be used to access to the ML model implementation via HTML request on local port 5555. The server implements a "/healt_check" access point (GET method only) and a "/prediction" feature (POST method only) which receives in input the sentence and returns the prediction result and the confidence score.
 1. INPUT:<br>
   METHOD - GET<br>
   ROUTE NAME - /health_check<br>
