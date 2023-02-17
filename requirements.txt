@@ -1,0 +1,7 @@
+pydantic==1.10.2
+spacy==3.4.3
+nltk==3.7
+spacy==3.4.3
+fastapi==0.89.1
+starlette==0.22.0
+uvicorn==0.20.0
