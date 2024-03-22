@@ -3,5 +3,5 @@ spacy==3.4.3
 nltk==3.7
 spacy==3.4.3
 fastapi==0.109.1
-starlette==0.27.0
+starlette==0.36.2
 uvicorn==0.20.0
