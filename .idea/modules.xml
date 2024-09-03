@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SentimentAnalysis Backend.iml" filepath="$PROJECT_DIR$/.idea/SentimentAnalysis Backend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ASAP_Backend.iml" filepath="$PROJECT_DIR$/.idea/ASAP_Backend.iml" />
     </modules>
   </component>
 </project>
