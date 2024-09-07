@@ -1,14 +1,11 @@
 import pickle
 import re
-import nltk.tokenize as tok
 from pydantic import BaseModel
-import spacy as sp
 
 def predictResult(review):
     model=importmodel('../export_models/lr_cv0.pkl')
     vect=importmodel('../export_models/cv_save.pkl')
-    pcs=Preprocessing()
-    prev=pcs.text_preproc(review)
+
     if(prev==""):
         raise IOError()
     vrev=vect.transform([prev])
@@ -28,9 +25,27 @@ def exportmodel(model, filename):
     with open(filename,'wb') as file:
         pickle.dump(model,file)
 
+class HealthData(BaseModel):
+    name: str
+    emergency_email: str
+    blood_pressure_high: int
+    glucose: int #1: Normal, 2: Above Normal, 3: Well Above Normal
+    cholesterol: int #1: Normal, 2: Above Normal, 3: Well Above Normal
+    age_years: int
+    gender: int # 1 female, 2 male
+    height_cm: int
+    bmi : float
+    smoker: bool # 0: Non-smoker, 1: Smoker
+    alcohol: bool # 0: Non-drinker, 1: Drinker
+    phisical_activity: bool # "active" or "inactive"
+    cardiovascular_disease: bool # 0: No, 1: Yes
+    bp_category: int # 1: Hypert 1, 2: Hypert 2, 3: Normal, 4: Elevated
+
+
 class Prediction(BaseModel):
     prediction: str | None= None
-    confidence_score: float |None= None
+    video_monitoring_active: bool | None= None
+"""
 class Preprocessing:
     def createstopw(self):
         stopwords = []
@@ -81,3 +96,5 @@ class Preprocessing:
     def __init__(self):
         self.nlp = sp.load("en_core_web_md")
         self.stopw = self.createstopw()
+"""
+class YoloRecon:

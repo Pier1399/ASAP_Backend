@@ -1,7 +1,5 @@
 pydantic==1.10.2
 spacy==3.4.3
-nltk==3.7
-spacy==3.4.3
 fastapi==0.109.1
 starlette==0.36.2
 uvicorn==0.20.0
