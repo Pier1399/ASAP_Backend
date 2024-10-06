@@ -1,100 +1,76 @@
 import pickle
-import re
 from pydantic import BaseModel
+import numpy as np
+from detection_model import DetectionModel
+model_path='C:/Users/DavideSavoia/Documents/ASAP_Backend/export_models/svc_model.pkl'
+scaler_path='C:/Users/DavideSavoia/Documents/ASAP_Backend/export_models/scaler.pkl'
+yolo_path="C:/Users/DavideSavoia/Documents/ASAP_Backend/export_models/best.pt"
+pca_path='C:/Users/DavideSavoia/Documents/ASAP_Backend/export_models/pca.pkl'
 
-def predictResult(review):
-    model=importmodel('../export_models/lr_cv0.pkl')
-    vect=importmodel('../export_models/cv_save.pkl')
+class ClassificationModel:
+    def __init__(self):
+        self.detector = self.importmodel(model_path)
+        self.scaler = self.importmodel(scaler_path)
+        self.pca = self.importmodel(pca_path)
+        self.activeDetections = []
 
-    if(prev==""):
-        raise IOError()
-    vrev=vect.transform([prev])
-    p=Prediction()
-    p.prediction,cs=model.predict(vrev)[0],model.predict_proba(vrev)[0]
-    if p.prediction == "positive":
-        p.confidence_score = round(cs[1] * 100,6)
-    else:
-        p.confidence_score = round(cs[0] * 100,6)
-    return p.dict()
+    def predictResult(self,query):
+        if len(self.activeDetections)>0:
+            for detector in self.activeDetections:
+                detector.stop()
+                detector.join()
+                self.activeDetections.remove(detector)
+        emergency_email=query.emergency_email
+        querylist= np.array([
+            query.gender,
+            query.height_cm,
+            query.blood_pressure_high,
+            query.blood_pressure_low,
+            query.cholesterol,
+            query.glucose,
+            query.smoker,
+            query.alcohol,
+            query.physical_activity,
+            query.age_years,
+            query.bmi,
+            query.blood_pressure_category
+        ]).reshape(1,-1)
+        patient_data = self.scaler.transform(querylist)
+        patient_data = self.pca.transform(patient_data)
+        prediction = self.detector.predict(patient_data)
+        result=Prediction()
+        if prediction[0] >= 0:
+            result.prediction="High risk"
+            detector=DetectionModel(yolo_path,emergency_email)
+            detector.start()
+            self.activeDetections.append(detector)
+        else:
+            result.prediction="No risk"
+        return result
 
-def importmodel(filename):
-    with open(filename,'rb') as file:
-        model=pickle.load(file)
-    return model
-def exportmodel(model, filename):
-    with open(filename,'wb') as file:
-        pickle.dump(model,file)
+
+    def importmodel(self,filename):
+        with open(filename, 'rb') as file:
+            model = pickle.load(file)
+        return model
+
 
 class HealthData(BaseModel):
     name: str
     emergency_email: str
-    blood_pressure_high: int
-    glucose: int #1: Normal, 2: Above Normal, 3: Well Above Normal
-    cholesterol: int #1: Normal, 2: Above Normal, 3: Well Above Normal
-    age_years: int
-    gender: int # 1 female, 2 male
-    height_cm: int
-    bmi : float
-    smoker: bool # 0: Non-smoker, 1: Smoker
-    alcohol: bool # 0: Non-drinker, 1: Drinker
-    phisical_activity: bool # "active" or "inactive"
-    cardiovascular_disease: bool # 0: No, 1: Yes
-    bp_category: int # 1: Hypert 1, 2: Hypert 2, 3: Normal, 4: Elevated
+    blood_pressure_high: int | None =None
+    blood_pressure_low: int | None=None
+    glucose: int | None=None # 1: Normal, 2: Above Normal, 3: Well Above Normal
+    cholesterol: int | None=None # 1: Normal, 2: Above Normal, 3: Well Above Normal
+    age_years: int | None=None
+    gender: int | None=None # 1 female, 2 male
+    height_cm: float | None=None
+    bmi: float | None=None
+    smoker: int | None=None # 0: Non-smoker, 1: Smoker
+    alcohol: int | None=None # 0: Non-drinker, 1: Drinker
+    physical_activity: int | None=None # 1 : "active", 0 : "inactive"
+    blood_pressure_category: int | None=None # 1: Hypert 1, 2: Hypert 2, 3: Normal, 4: Elevated
 
 
 class Prediction(BaseModel):
-    prediction: str | None= None
-    video_monitoring_active: bool | None= None
-"""
-class Preprocessing:
-    def createstopw(self):
-        stopwords = []
-        with open('../export_models/StopWords_Geographic.txt', 'r') as f:
-            sw_g = f.readlines()
-        with open('../export_models/StopWords_DatesandNumbers.txt', 'r') as f:
-            sw_d = f.readlines()
-        [stopwords.append(sw.strip('\n').lower()) for sw in sw_g]
-        [stopwords.append(sw.strip('\n').lower()) for sw in sw_d]
-        return stopwords
-
-    def text_preproc(self, tokrev):
-        if not self.stopw:
-            self.stopw = self.createstopw()
-        tokrev = re.sub(r"[^A-Za-z]+", " ", tokrev)
-        renot = re.compile("|".join(map(re.escape, self.notwords)))
-        tokrev = renot.sub("not", tokrev)
-        tokrev = tok.word_tokenize(tokrev, "english")  # tokenizzo la prima review
-        tokrev = [token.lemma_ for token in self.nlp(str(tokrev)) if
-                  (not token.is_punct)]  # pulisco dalla punteggiatura
-        tokrev = [word for word in tokrev if (
-                word != '' and word != ' ' and word != "\'s" and word != 'br' and word != 'em' and word not in self.stopw and len(
-            word) > 1)]
-        stoken = " ".join(tokrev)
-        return stoken
-
-    notwords = [
-        "nor",
-        "don t",
-        "won t",
-        "couldn",
-        "didn",
-        "doesn",
-        "hasn",
-        "hadn",
-        "haven",
-        "isn",
-        'mightn',
-        'mustn',
-        'needn',
-        'shan',
-        'shouldn',
-        'wasn',
-        'weren',
-        'wouldn',
-    ]
-
-    def __init__(self):
-        self.nlp = sp.load("en_core_web_md")
-        self.stopw = self.createstopw()
-"""
-class YoloRecon:
+    prediction: str | None = None
